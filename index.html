@@ -1,0 +1,89 @@
+<html>
+
+    <head>
+        <title>mini-pano</title>
+        <style>
+            canvas {
+                border: 0;
+                background-color: grey;
+
+                width: 300px;
+                height: 300px;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div id="title-area">Version 1.0.1 (buggy)
+            <br>move mouse to shift the view to the side
+        </div>
+        <canvas id="canvas"></canvas>
+        <div style="display:none;">
+            <img id="source" src="./sample.jpg" />
+        </div>
+
+        <script>
+
+            const pixelRatio = window.devicePixelRatio;
+
+            const image = document.getElementById("source");
+
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+
+            let imgWidth, imgHeight;
+
+            let x0, y0, x1, y1, dx=0, dy=0;
+
+            /* syntax 
+            
+            drawImage(image, dx, dy)
+            drawImage(image, dx, dy, dWidth, dHeight)
+            drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
+            
+            */
+
+            image.addEventListener("load", (e) => {
+                imgWidth = image.naturalWidth ;
+                imgHeight = image.naturalHeight ;
+
+                // restrict to aspect > 1 for now
+                const aspect = imgWidth / imgHeight;
+
+                draw(imgWidth, imgHeight, dx, dy);
+     
+            });
+
+            function draw(imgWidth, imgHeight, dx, dy) {
+                ctx.drawImage(image, dx, 0, imgHeight, imgHeight, 0, 0, canvas.width, canvas.height);
+            }
+
+            function translation(e){
+
+                if(!x0) {
+                    x0 = e.clientX;
+                    y0 = e.clientY;
+                } else {
+                    x1 = e.clientX;
+                    y2 = e.clientY;
+
+                    dx += (x1 - x0) * 5;
+                    dy = y1 - y0;
+
+                    console.log(dx);
+                    draw(imgWidth, imgHeight, dx, dy);
+
+                    x0 = x1;
+                    y0 = y1;
+                }
+
+            }
+
+            window.addEventListener('mousemove', translation, false);
+
+        </script>
+
+    </body>
+
+</html>
