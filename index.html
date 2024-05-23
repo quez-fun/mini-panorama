@@ -15,7 +15,7 @@
 
     <body>
 
-        <div id="title-area">Version 1.0.1 (buggy)
+        <div id="title-area">Version 1.0.2 (still buggy)
             <br>move mouse to shift the view to the side
         </div>
         <canvas id="canvas"></canvas>
@@ -56,7 +56,7 @@
             });
 
             function draw(imgWidth, imgHeight, dx, dy) {
-                ctx.drawImage(image, dx, 0, imgHeight, imgHeight, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, dx, dy, imgHeight, imgHeight/2, 0, 0, canvas.width, canvas.height);
             }
 
             function translation(e){
@@ -64,14 +64,14 @@
                 if(!x0) {
                     x0 = e.clientX;
                     y0 = e.clientY;
+
                 } else {
                     x1 = e.clientX;
-                    y2 = e.clientY;
+                    y1 = e.clientY;
 
-                    dx += (x1 - x0) * 5;
-                    dy = y1 - y0;
+                    dx += (x1 - x0) * 10;
+                    dy += (y1 - y0);
 
-                    console.log(dx);
                     draw(imgWidth, imgHeight, dx, dy);
 
                     x0 = x1;
