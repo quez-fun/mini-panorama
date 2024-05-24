@@ -3,22 +3,41 @@
     <head>
         <title>mini-pano</title>
         <style>
+            body {
+                margin: 0 auto;
+            }
+
+            #title-area {
+                text-align: center;
+                padding: 40px;
+            }
+
+            #canvas-wrapper {
+                margin: 50px
+            }
+
             canvas {
                 border: 0;
                 background-color: grey;
 
+                margin: 0 auto;
                 width: 300px;
                 height: 300px;
+
             }
         </style>
     </head>
 
     <body>
 
-        <div id="title-area">Version 1.0.2 (still buggy)
-            <br>move mouse to shift the view to the side
+        <div id="title-area">
+            <h4>Version 1.0.3 (still buggy)</h4>
+            <p>move mouse to shift the view</p>
+            <div id="canvas-wrapper">
+                <canvas id="canvas"></canvas>
+            </div>
         </div>
-        <canvas id="canvas"></canvas>
+
         <div style="display:none;">
             <img id="source" src="./sample.jpg" />
         </div>
@@ -34,7 +53,7 @@
 
             let imgWidth, imgHeight;
 
-            let x0, y0, x1, y1, dx=0, dy=0;
+            let x0, y0, x1, y1, dx, dy;
 
             /* syntax 
             
@@ -45,42 +64,53 @@
             */
 
             image.addEventListener("load", (e) => {
-                imgWidth = image.naturalWidth ;
-                imgHeight = image.naturalHeight ;
+                imgWidth = image.naturalWidth;
+                imgHeight = image.naturalHeight;
 
                 // restrict to aspect > 1 for now
                 const aspect = imgWidth / imgHeight;
 
+                dx = Math.floor(imgWidth/2-imgHeight/2), dy = Math.floor(imgHeight / 4);
                 draw(imgWidth, imgHeight, dx, dy);
-     
+
             });
 
             function draw(imgWidth, imgHeight, dx, dy) {
-                ctx.drawImage(image, dx, dy, imgHeight, imgHeight/2, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, dx, dy, imgHeight, Math.floor(imgHeight / 2), 0, 0, canvas.width, canvas.height);
             }
 
-            function translation(e){
+            function mousedown(e) {
+                x0 = e.clientX;
+                y0 = e.clientY;
 
-                if(!x0) {
-                    x0 = e.clientX;
-                    y0 = e.clientY;
+                window.addEventListener('mousemove', mousemove, false);
+                window.addEventListener('mouseup', mouseup, false);
+            }
 
-                } else {
-                    x1 = e.clientX;
-                    y1 = e.clientY;
+            function mousemove(e) {
 
-                    dx += (x1 - x0) * 10;
-                    dy += (y1 - y0);
+                x1 = e.clientX;
+                y1 = e.clientY;
 
-                    draw(imgWidth, imgHeight, dx, dy);
+                dx -= (x1 - x0) *2;
+                dy -= (y1 - y0);
 
-                    x0 = x1;
-                    y0 = y1;
-                }
+                dx = Math.min(imgWidth-imgHeight, Math.max(0, dx));
+                dy = Math.min(Math.floor(imgHeight / 2), Math.max(0, dy));
+
+                draw(imgWidth, imgHeight, Math.min(imgWidth,dx), dy);
+
+                x0 = x1;
+                y0 = y1;
 
             }
 
-            window.addEventListener('mousemove', translation, false);
+            function mouseup() {
+                window.removeEventListener('mousemove', mousemove, false);
+            }
+
+            window.addEventListener('mousedown', mousedown, false)
+
 
         </script>
 
