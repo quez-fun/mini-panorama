@@ -21,7 +21,7 @@
                 background-color: grey;
 
                 margin: 0 auto;
-                width: 500px;
+                width: 300px;
                 height: 300px;
             }
 
@@ -33,7 +33,7 @@
                 line-height: 30px;
                 position: absolute;
                 z-index: 9;
-                animation: article-pulsating 1.5s ease-in infinite;
+                animation: pulsating 1.5s ease-in infinite;
             }
 
             a {
@@ -51,20 +51,26 @@
                 text-align: center;
             }
 
-            @keyframes article-pulsating {
+            @keyframes pulsating {
                 0% {
-                    border-width: 1px;
-                    top: 200px;
-                    left: 400px;
+                    border-width: 0px;
+                    top: 0px;
+                    left: 0px;
                 }
 
                 100% {
                     border-color: rgba(255, 255, 255, 0);
-                    border-width: 11px;
-                    top: 190px;
-                    left: 390px;
+                    border-width: 10px;
+                    top: -10px;
+                    left: -10px;
                 }
 
+            }
+
+            @media(max-width: 800px) {
+                canvas {
+                    width: 300px;
+                }
             }
         </style>
     </head>
@@ -75,8 +81,7 @@
             <a href="">tag</a>
         </div>
         <div id="title-area">
-            <h4>Version 1.1.0 - tag added</h4>
-            <p>(problem with positioning the tag)</p>
+            <h4>Version 1.1.1 - tag added</h4>
             <p>move mouse to shift the view</p>
             <div id="canvas-wrapper">
                 <canvas id="canvas"></canvas>
@@ -96,11 +101,15 @@
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
-            const tag = document.getElementsByClassName('tag')[0];
-
             let imgWidth, imgHeight;
 
             let x0, y0, x1, y1, dx, dy;
+
+            const tag = document.getElementsByClassName('tag')[0];
+            let tagX = canvas.offsetLeft + 50, tagY = canvas.offsetTop + 40;
+
+
+            tag.style.transform = 'translate(' + tagX + 'px, ' + tagY + 'px)';
 
             /* syntax 
             
@@ -146,7 +155,20 @@
                 dy = Math.min(Math.floor(imgHeight / 2), Math.max(0, dy));
 
                 draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
-                tag.style.transform = 'translate(-'+ (dx - 400) +'px,'+ (- dy + 200) +'px)';
+
+                //为啥canvas大小在300x300时如下有用，变成500x300后x轴不行了？
+
+                if (tagX < canvas.offsetLeft | tagY < canvas.offsetTop | tagX > canvas.offsetLeft + canvas.offsetWidth | tagY > canvas.offsetTop + canvas.offsetHeight) {
+                    tag.style.display = 'none';
+                } else {
+                    console.log('reappear');
+                    tag.style.display = 'block';
+                }
+
+                tagX += (x1 - x0) * 2;
+                tagY += (y1 - y0) * 2;
+                tag.style.transform = 'translate(' + tagX + 'px,' + tagY + 'px)';
+
                 x0 = x1;
                 y0 = y1;
 
@@ -156,8 +178,13 @@
                 window.removeEventListener('mousemove', mousemove, false);
             }
 
-            window.addEventListener('mousedown', mousedown, false)
+            function resize() {
+                //alert('resize!')
+            }
 
+            window.addEventListener('mousedown', mousedown, false);
+
+            window.addEventListener('resize', resize, false);
 
         </script>
 
