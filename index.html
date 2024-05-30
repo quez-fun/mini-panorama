@@ -81,7 +81,7 @@
             <a href="">tag</a>
         </div>
         <div id="title-area">
-            <h4>Version 1.1.1 - tag added</h4>
+            <h4>Version 1.1.2 - tag added</h4>
             <p>move mouse to shift the view</p>
             <div id="canvas-wrapper">
                 <canvas id="canvas"></canvas>
@@ -101,38 +101,24 @@
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
-            let imgWidth, imgHeight;
+            let imgWidth, imgHeight, aspect;
 
-            let x0, y0, x1, y1, dx, dy;
+            let x0, y0, x1, y1, dx = 200, dy = 50, factor = 3;
 
             const tag = document.getElementsByClassName('tag')[0];
-            let tagX = canvas.offsetLeft + 50, tagY = canvas.offsetTop + 40;
-
-
-            tag.style.transform = 'translate(' + tagX + 'px, ' + tagY + 'px)';
-
-            /* syntax 
-            
-            drawImage(image, dx, dy)
-            drawImage(image, dx, dy, dWidth, dHeight)
-            drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight)
-            
-            */
+            const tagWidth = tag.offsetWidth;
+            const tagX = 390, tagY = 360;
+            renderTag();
 
             image.addEventListener("load", (e) => {
                 imgWidth = image.naturalWidth;
                 imgHeight = image.naturalHeight;
-
-                // restrict to aspect > 1 for now
-                const aspect = imgWidth / imgHeight;
-
-                dx = Math.floor(imgWidth / 2 - imgHeight / 2), dy = Math.floor(imgHeight / 4);
+                aspect = imgWidth / imgHeight;
                 draw(imgWidth, imgHeight, dx, dy);
-
             });
 
             function draw(imgWidth, imgHeight, dx, dy) {
-                ctx.drawImage(image, dx, dy, imgHeight, Math.floor(imgHeight / 2), 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, dx, dy, imgHeight, Math.floor(imgHeight / factor), 0, 0, canvas.width, canvas.height);
             }
 
             function mousedown(e) {
@@ -148,30 +134,29 @@
                 x1 = e.clientX;
                 y1 = e.clientY;
 
-                dx -= (x1 - x0) * 2;
+                dx -= (x1 - x0);
                 dy -= (y1 - y0);
 
                 dx = Math.min(imgWidth - imgHeight, Math.max(0, dx));
                 dy = Math.min(Math.floor(imgHeight / 2), Math.max(0, dy));
 
+                console.log('dy=' + dy);
                 draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
 
-                //为啥canvas大小在300x300时如下有用，变成500x300后x轴不行了？
-
-                if (tagX < canvas.offsetLeft | tagY < canvas.offsetTop | tagX > canvas.offsetLeft + canvas.offsetWidth | tagY > canvas.offsetTop + canvas.offsetHeight) {
-                    tag.style.display = 'none';
-                } else {
-                    console.log('reappear');
-                    tag.style.display = 'block';
-                }
-
-                tagX += (x1 - x0) * 2;
-                tagY += (y1 - y0) * 2;
-                tag.style.transform = 'translate(' + tagX + 'px,' + tagY + 'px)';
+                renderTag();
 
                 x0 = x1;
                 y0 = y1;
 
+            }
+
+            function renderTag() {
+                if (- dx + tagX < 0 | - dy * factor + tagY < 0 | - dx + tagX > canvas.offsetWidth - tagWidth | - dy * factor + tagY > + canvas.offsetHeight - tagWidth) {
+                    tag.style.display = 'none';
+                } else {
+                    tag.style.display = 'block';
+                }
+                tag.style.transform = 'translate(' + (canvas.offsetLeft - dx + tagX) + 'px,' + (canvas.offsetTop - dy * factor + tagY) + 'px)';
             }
 
             function mouseup() {
