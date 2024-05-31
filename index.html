@@ -86,8 +86,9 @@
             <a href="">tag</a>
         </div>
         <div id="title-area">
-            <h4>Version 1.2.0 - zoom in/out</h4>
-            <p>move mouse to shift the view</p>
+            <h4>Version 1.2.1 - zoom in/out</h4>
+            <p>1. move mouse to shift the view</p>
+            <p>2. scroll on canvas to zoom in/out</p>
             <div id="canvas-wrapper">
                 <canvas id="canvas"></canvas>
             </div>
@@ -144,8 +145,8 @@
                 dx += (x0 - x1);
                 dy += (y0 - y1);
 
-                dx = Math.min(imgWidth - imgHeight, Math.max(0, dx));
-                dy = Math.min(imgHeight, Math.max(0, dy));
+                dx = Math.min(imgWidth - canvas.offsetWidth/factor, Math.max(0, dx));
+                dy = Math.min(imgHeight - canvas.offsetHeight/factor, Math.max(0, dy));
 
                 draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
 
@@ -182,14 +183,16 @@
                 e.preventDefault();
                 factor += e.deltaY / 50;
                 factor = Math.min(5, Math.max(factor, 1));
-                console.log(factor);
+                dx = Math.min(imgWidth - canvas.offsetWidth/factor, Math.max(0, dx));
+                dy = Math.min(imgHeight - canvas.offsetHeight/factor, Math.max(0, dy));
                 draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
                 renderTag();
             }
 
-            window.addEventListener('mousedown', mousedown, false);
 
             window.addEventListener('resize', onWindowResize, false);
+
+            canvas.addEventListener('mousedown', mousedown, false);
             canvas.addEventListener( 'wheel', zoom, { passive: false } );
 
         </script>
