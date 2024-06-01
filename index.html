@@ -41,6 +41,11 @@
                 animation: pulsating 1.5s ease-in infinite;
             }
 
+            .tag:hover .tag-desc {
+                opacity: 1;
+                transition: opacity 1s;
+            }
+
             a {
                 color: #1d71b8;
                 background-color: white;
@@ -54,6 +59,35 @@
                 margin: auto;
                 text-decoration: none;
                 text-align: center;
+            }
+
+            .tag-desc {
+                background-color: rgba(0, 0, 0, 0.5);
+                border-radius: 10px;
+                width: 120px;
+                font-size: 12px;
+                color: white;
+                position: absolute;
+                z-index: 9;
+                opacity: 0;
+                line-height: 18px;
+            }
+
+            .tag-desc>p {
+                padding: 0 15px;
+            }
+
+            .tag-desc::before {
+                border: 11px solid transparent;
+                border-bottom: 0;
+                border-top: 11px solid rgba(0, 0, 0, 0.5);
+                bottom: 0;
+                content: "";
+                display: block;
+                left: 50%;
+                position: absolute;
+                transform: translate(-50%, 100%);
+                width: 0;
             }
 
             @keyframes pulsating {
@@ -82,13 +116,18 @@
 
     <body>
 
+
         <div class="tag">
+            <div class="tag-desc">
+                <p>meta data appears here ; )</p>
+            </div>
             <a href="">tag</a>
         </div>
         <div id="title-area">
-            <h4>Version 1.2.1 - zoom in/out</h4>
+            <h4>Version 1.2.2</h4>
             <p>1. move mouse to shift the view</p>
             <p>2. scroll on canvas to zoom in/out</p>
+            <p>3. tag & desc when mouse hovers over <br>(minor bug: description area will flow out of canvas when the tag is near boundary)</p>
             <div id="canvas-wrapper">
                 <canvas id="canvas"></canvas>
             </div>
@@ -114,6 +153,9 @@
             const tag = document.getElementsByClassName('tag')[0];
             const tagWidth = tag.offsetWidth;
             const tagX = 250, tagY = 120;
+
+            const tagDesc = document.getElementsByClassName('tag-desc')[0];
+            const tagDescOffset = [(tag.offsetWidth -tagDesc.offsetWidth) / 2, -tagDesc.offsetHeight - tag.offsetHeight * 0.7];
             renderTag();
 
             image.addEventListener("load", (e) => {
@@ -124,8 +166,8 @@
             });
 
             function draw(imgWidth, imgHeight, dx, dy) {
-                const dHeight= canvas.height / factor;
-                const dWidth = dHeight * canvas.offsetWidth / canvas.offsetHeight ;
+                const dHeight = canvas.height / factor;
+                const dWidth = dHeight * canvas.offsetWidth / canvas.offsetHeight;
                 ctx.drawImage(image, dx, dy, dWidth * pixelRatio, dHeight * pixelRatio, 0, 0, canvas.width, canvas.height);
             }
 
@@ -139,14 +181,15 @@
 
             function mousemove(e) {
 
+
                 x1 = e.clientX;
                 y1 = e.clientY;
 
                 dx += (x0 - x1);
                 dy += (y0 - y1);
 
-                dx = Math.min(imgWidth - canvas.offsetWidth/factor, Math.max(0, dx));
-                dy = Math.min(imgHeight - canvas.offsetHeight/factor, Math.max(0, dy));
+                dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
 
                 draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
 
@@ -162,12 +205,13 @@
                 const translateX = (tagX - dx) * factor;
                 const translateY = (tagY - dy) * factor;
 
-                if ( translateX < 0 | translateY < 0 | translateX > canvas.offsetWidth - tagWidth | translateY > + canvas.offsetHeight - tagWidth) {
+                if (translateX < 0 | translateY < 0 | translateX > canvas.offsetWidth - tagWidth | translateY > + canvas.offsetHeight - tagWidth) {
                     tag.style.display = 'none';
                 } else {
                     tag.style.display = 'block';
                 }
                 tag.style.transform = 'translate(' + (canvas.offsetLeft + translateX) + 'px,' + (canvas.offsetTop + translateY) + 'px)';
+                tagDesc.style.transform = 'translate(' + tagDescOffset[0] + 'px,' + tagDescOffset[1] + 'px)';
             }
 
             function mouseup() {
@@ -179,12 +223,12 @@
                 renderTag();
             }
 
-            function zoom(e){
+            function zoom(e) {
                 e.preventDefault();
                 factor += e.deltaY / 50;
                 factor = Math.min(5, Math.max(factor, 1));
-                dx = Math.min(imgWidth - canvas.offsetWidth/factor, Math.max(0, dx));
-                dy = Math.min(imgHeight - canvas.offsetHeight/factor, Math.max(0, dy));
+                dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
                 draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
                 renderTag();
             }
@@ -193,7 +237,7 @@
             window.addEventListener('resize', onWindowResize, false);
 
             canvas.addEventListener('mousedown', mousedown, false);
-            canvas.addEventListener( 'wheel', zoom, { passive: false } );
+            canvas.addEventListener('wheel', zoom, { passive: false });
 
         </script>
 
