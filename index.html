@@ -130,7 +130,7 @@
         </div>
         <div id="title-area">
             <h4>Version 1.2.3</h4>
-            <p>1. move mouse to shift the view</p>
+            <p>1. move mouse/finger to shift the view</p>
             <p>2. scroll on canvas to zoom in/out</p>
             <p>3. tag & desc when mouse hovers over <br>(minor bug: description area will flow out of canvas when the
                 tag is near boundary)</p>
@@ -153,9 +153,9 @@
             const canvas = document.getElementById("canvas");
             const ctx = canvas.getContext("2d");
 
-            let imgWidth, imgHeight, aspect;
+            let imgWidth, imgHeight;
 
-            let x0, y0, x1, y1, dx = 120, dy = 50, factor = 1.5;
+            let x0, y0, x1, y1, dx = 0, dy = 0, factor = 1.5; //⏸️注意factor的极值
 
             const tag = document.getElementsByClassName('tag')[0];
             const tagWidth = tag.offsetWidth;
@@ -168,14 +168,16 @@
             image.addEventListener("load", (e) => {
                 imgWidth = image.naturalWidth;
                 imgHeight = image.naturalHeight;
-                aspect = imgWidth / imgHeight;
-                draw(imgWidth, imgHeight, dx, dy);
+
+                draw(dx, dy);
             });
 
-            function draw(imgWidth, imgHeight, dx, dy) {
-                const dHeight = canvas.height / factor;
+            function draw(dx, dy) {
+                //const dHeight = Math.min(canvas.height / factor, canvas.height);
+                //tmpConsole.innerHTML = canvas.offsetWidth/canvas.width;
+                const dHeight = canvas.offsetHeight / factor;
                 const dWidth = dHeight * canvas.offsetWidth / canvas.offsetHeight;
-                ctx.drawImage(image, dx, dy, dWidth * pixelRatio, dHeight * pixelRatio, 0, 0, canvas.width, canvas.height);
+                ctx.drawImage(image, dx, dy, dWidth, dHeight, 0, 0, canvas.width, canvas.height);
             }
 
             function mousedown(e) {
@@ -188,7 +190,6 @@
 
             function mousemove(e) {
 
-
                 x1 = e.clientX;
                 y1 = e.clientY;
 
@@ -198,7 +199,8 @@
                 dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
                 dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
 
-                draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
+                draw(Math.min(imgWidth, dx), dy);
+                //draw(dx, dy);
 
                 renderTag();
 
@@ -227,7 +229,7 @@
             }
 
             function onWindowResize() {
-                draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
+                draw(Math.min(imgWidth, dx), dy);
                 renderTag();
             }
 
@@ -237,12 +239,13 @@
                 factor = Math.min(5, Math.max(factor, 1));
                 dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
                 dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
-                draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
+                draw(Math.min(imgWidth, dx), dy);
                 renderTag();
             }
 
             function touchstart(e) {
-                //tmpConsole.innerText=e.pageX;
+                tmpConsole.innerText=e.length;
+                //tmpConsole.innerText = canvas.offsetHeight;
 
                 e.preventDefault();
                 x0 = e.pageX;
@@ -262,9 +265,9 @@
                 dy += (y0 - y1);
 
                 dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
-                dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+                dy = Math.min(imgHeight - (canvas.offsetHeight / factor) , Math.max(0, dy)); 
 
-                draw(imgWidth, imgHeight, Math.min(imgWidth, dx), dy);
+                draw(Math.min(imgWidth, dx), dy);
 
                 renderTag();
 
