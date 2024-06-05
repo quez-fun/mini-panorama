@@ -155,7 +155,7 @@
 
             let imgWidth, imgHeight;
 
-            let x0, y0, x1, y1, dx = 0, dy = 0, factor = 1.5; //⏸️注意factor的极值
+            let x0, y0, x1, y1, dx = 0, dy = 0, delta0, delta1, factor = 1.5; //⏸️注意factor的极值
 
             const tag = document.getElementsByClassName('tag')[0];
             const tagWidth = tag.offsetWidth;
@@ -235,44 +235,97 @@
 
             function zoom(e) {
                 e.preventDefault();
-                factor += e.deltaY / 50;
+                factor -= e.deltaY / 50;
                 factor = Math.min(5, Math.max(factor, 1));
                 dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
                 dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
-                draw(Math.min(imgWidth, dx), dy);
+                draw(dx, dy);
                 renderTag();
             }
 
             function touchstart(e) {
-                tmpConsole.innerText=e.length;
-                //tmpConsole.innerText = canvas.offsetHeight;
 
                 e.preventDefault();
-                x0 = e.pageX;
-                y0 = e.pageY;
+
+                tmpConsole.innerText = e.targetTouches.length;
+
+                switch (e.targetTouches.length) {
+
+                    case 1:
+
+                        x0 = e.pageX;
+                        y0 = e.pageY;
+
+                        break;
+
+                    default:
+
+                        const deltaX = e.targetTouches[0].pageX - e.targetTouches[1].pageX;
+                        const deltaY = e.targetTouches[0].pageY - e.targetTouches[1].pageY;
+                        delta0 = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                        break;
+
+                }
 
                 canvas.addEventListener('touchmove', touchmove, false);
                 canvas.addEventListener('touchend', touchend, false);
+
             }
 
             function touchmove(e) {
 
+                e.preventDefault();
 
-                x1 = e.pageX;
-                y1 = e.pageY;
+                tmpConsole.innerText = e.targetTouches.length;
 
-                dx += (x0 - x1);
-                dy += (y0 - y1);
+                switch (e.targetTouches.length) {
 
-                dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
-                dy = Math.min(imgHeight - (canvas.offsetHeight / factor) , Math.max(0, dy)); 
+                    case 1:
 
-                draw(Math.min(imgWidth, dx), dy);
+                        x1 = e.pageX;
+                        y1 = e.pageY;
 
-                renderTag();
+                        dx += (x0 - x1);
+                        dy += (y0 - y1);
 
-                x0 = x1;
-                y0 = y1;
+                        dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                        dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+
+                        draw(Math.min(imgWidth, dx), dy);
+
+                        renderTag();
+
+                        x0 = x1;
+                        y0 = y1;
+
+                        break;
+
+                    default:
+
+                        //tmpConsole.innerText = e.targetTouches[1].pageX;
+
+                        //const delta = e.targetTouches[1]
+
+                        const deltaX = e.targetTouches[0].pageX - e.targetTouches[1].pageX;
+                        const deltaY = e.targetTouches[0].pageY - e.targetTouches[1].pageY;
+
+                        if (!delta0) {
+                            delta0 = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        } else {
+                            delta1 = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                            factor += (delta1 - delta0) / 50;
+                            factor = Math.min(5, Math.max(factor, 1));
+                            tmpConsole.innerText = factor;
+                            dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                            dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+                            draw(dx, dy);
+                            renderTag();
+                            delta0 = delta1;
+                        }
+                        break;
+
+                }
 
             }
 
