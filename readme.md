@@ -8,8 +8,10 @@ Even just with a smartphone, you can now create elegant panorama views with inte
 
 <img width="698" alt="Screenshot 2024-06-01 at 16 38 30" src="https://github.com/quez-fun/mini-panorama/assets/54435650/5df6cec7-0926-4347-b086-cdbff3654255">
 
+live version: https://quez-fun.github.io/mini-panorama/
 
 #Newly added features:
 
 - descriptive tag;
 - zoom in/out
+
