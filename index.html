@@ -122,14 +122,10 @@
 
         <div>temporary mobile console area:<div id="tmpConsole"></div>
         </div>
-        <div class="tag">
-            <div class="tag-desc">
-                <p>meta data appears here ; )</p>
-            </div>
-            <a href="">tag</a>
+        <div class="tag-layer">
         </div>
         <div id="title-area">
-            <h4>Version 1.2.3</h4>
+            <h4>Version 1.2.4</h4>
             <p>1. move mouse/finger to shift the view</p>
             <p>2. scroll on canvas to zoom in/out</p>
             <p>3. tag & desc when mouse hovers over <br>(minor bug: description area will flow out of canvas when the
@@ -155,14 +151,34 @@
 
             let imgWidth, imgHeight;
 
-            let x0, y0, x1, y1, dx = 0, dy = 0, delta0, delta1, factor = 1.5; //⏸️注意factor的极值
+            let x0, y0, x1, y1, dx = 0, dy = 0, delta0, delta1, factor = 1.5, zoomMax = 1, zoomMin = 5;
 
-            const tag = document.getElementsByClassName('tag')[0];
-            const tagWidth = tag.offsetWidth;
-            const tagX = 250, tagY = 120;
+            const tags = [
+                ['tag', 'tag-desc', [250, 120]],
+                ['tag', 'tag-desc', [120, 160]],
+                ['tag', 'tag-desc', [320, 190]],
+            ];
+            const tagLayer = document.getElementsByClassName('tag-layer')[0];
 
-            const tagDesc = document.getElementsByClassName('tag-desc')[0];
-            const tagDescOffset = [(tag.offsetWidth - tagDesc.offsetWidth) / 2, -tagDesc.offsetHeight - tag.offsetHeight * 0.7];
+            for (i = 0; i < tags.length; i++) {
+                const tag = document.createElement('div');
+                tag.className = "tag";
+                tagLayer.appendChild(tag);
+
+                const tagDesc = document.createElement('div');
+                tagDesc.className = "tag-desc";
+                tag.appendChild(tagDesc);
+
+                const p = document.createElement('p');
+                tagDesc.appendChild(p);
+                p.innerText = tags[i][1];
+
+                const a = document.createElement('a');
+                a.innerText = tags[i][0];
+                tag.appendChild(a);
+            }
+
+
             renderTag();
 
             image.addEventListener("load", (e) => {
@@ -173,8 +189,6 @@
             });
 
             function draw(dx, dy) {
-                //const dHeight = Math.min(canvas.height / factor, canvas.height);
-                //tmpConsole.innerHTML = canvas.offsetWidth/canvas.width;
                 const dHeight = canvas.offsetHeight / factor;
                 const dWidth = dHeight * canvas.offsetWidth / canvas.offsetHeight;
                 ctx.drawImage(image, dx, dy, dWidth, dHeight, 0, 0, canvas.width, canvas.height);
@@ -200,7 +214,6 @@
                 dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
 
                 draw(Math.min(imgWidth, dx), dy);
-                //draw(dx, dy);
 
                 renderTag();
 
@@ -211,16 +224,26 @@
 
             function renderTag() {
 
-                const translateX = (tagX - dx) * factor;
-                const translateY = (tagY - dy) * factor;
+                for (i = 0; i < tags.length; i++) {
+                //for (i = 0; i < 1; i++) {
 
-                if (translateX < 0 | translateY < 0 | translateX > canvas.offsetWidth - tagWidth | translateY > + canvas.offsetHeight - tagWidth) {
-                    tag.style.display = 'none';
-                } else {
-                    tag.style.display = 'block';
+                    const tag = document.getElementsByClassName('tag')[i];
+                    const tagDesc = document.getElementsByClassName('tag-desc')[i];
+                    const tagDescOffset = [(tag.offsetWidth - tagDesc.offsetWidth) / 2, -tagDesc.offsetHeight - tag.offsetHeight * 0.7];
+
+                    const translateX = (tags[i][2][0] - dx) * factor;
+                    const translateY = (tags[i][2][1] - dy) * factor;
+
+                    if (translateX < 0 | translateY < 0 | translateX > canvas.offsetWidth - tag.offsetWidth | translateY > + canvas.offsetHeight - tag.offsetWidth) {
+                        tag.style.display = 'none';
+                    } else {
+                        tag.style.display = 'block';
+                    }
+                    tag.style.transform = 'translate(' + (canvas.offsetLeft + translateX) + 'px,' + (canvas.offsetTop + translateY) + 'px)';
+                    tagDesc.style.transform = 'translate(' + tagDescOffset[0] + 'px,' + tagDescOffset[1] + 'px)';
+
                 }
-                tag.style.transform = 'translate(' + (canvas.offsetLeft + translateX) + 'px,' + (canvas.offsetTop + translateY) + 'px)';
-                tagDesc.style.transform = 'translate(' + tagDescOffset[0] + 'px,' + tagDescOffset[1] + 'px)';
+
             }
 
             function mouseup() {
@@ -236,7 +259,7 @@
             function zoom(e) {
                 e.preventDefault();
                 factor -= e.deltaY / 50;
-                factor = Math.min(5, Math.max(factor, 1));
+                factor = Math.min(zoomMin, Math.max(factor, zoomMax));
                 dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
                 dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
                 draw(dx, dy);
@@ -302,10 +325,6 @@
                         break;
 
                     default:
-
-                        //tmpConsole.innerText = e.targetTouches[1].pageX;
-
-                        //const delta = e.targetTouches[1]
 
                         const deltaX = e.targetTouches[0].pageX - e.targetTouches[1].pageX;
                         const deltaY = e.targetTouches[0].pageY - e.targetTouches[1].pageY;
