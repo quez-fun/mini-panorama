@@ -1,0 +1,358 @@
+<html>
+
+    <head>
+        <title>mini-pano</title>
+        <meta charset="utf-8">
+        <meta name="viewport"
+            content="width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+        <style>
+            body {
+                margin: 0 auto;
+                width: auto;
+                height: auto;
+                overflow: hidden;
+            }
+
+            #title-area {
+                text-align: center;
+                padding: 40px;
+            }
+
+            #canvas-wrapper {
+                margin: 50px 0;
+                width: 100%;
+            }
+
+            canvas {
+                border: 0;
+                background-color: grey;
+
+                margin: 0 auto;
+                width: 800px;
+                height: 400px;
+
+            }
+
+            .tag {
+                border: 1px solid #04ffe6;
+                border-radius: 30px;
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
+                position: absolute;
+                z-index: 9;
+                animation: pulsating 1.5s ease-in infinite;
+            }
+
+            .tag:hover .tag-desc {
+                opacity: 1;
+                transition: opacity 1s;
+            }
+
+            a {
+                color: #1d71b8;
+                background-color: white;
+                border-radius: 30px;
+                width: 30px;
+                height: 30px;
+                display: block;
+                font-size: 11px;
+                width: 30px;
+                height: 30px;
+                margin: auto;
+                text-decoration: none;
+                text-align: center;
+            }
+
+            .tag-desc {
+                background-color: rgba(0, 0, 0, 0.5);
+                border-radius: 10px;
+                width: 120px;
+                font-size: 12px;
+                color: white;
+                position: absolute;
+                z-index: 9;
+                opacity: 0;
+                line-height: 18px;
+            }
+
+            .tag-desc>p {
+                padding: 0 15px;
+            }
+
+            .tag-desc::before {
+                border: 11px solid transparent;
+                border-bottom: 0;
+                border-top: 11px solid rgba(0, 0, 0, 0.5);
+                bottom: 0;
+                content: "";
+                display: block;
+                left: 50%;
+                position: absolute;
+                transform: translate(-50%, 100%);
+                width: 0;
+            }
+
+            @keyframes pulsating {
+                0% {
+                    border-width: 0px;
+                    top: 0px;
+                    left: 0px;
+                }
+
+                100% {
+                    border-color: rgba(255, 255, 255, 0);
+                    border-width: 10px;
+                    top: -10px;
+                    left: -10px;
+                }
+
+            }
+
+            @media(max-width: 800px) {
+                canvas {
+                    width: 300px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <div class="tag-layer">
+        </div>
+        <div id="title-area">
+            <h4>An Industrial Example</h4>
+            <p>with tags of equipment to provide meta data</p>
+            <div id="canvas-wrapper">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+
+        <div style="display:none;">
+            <img id="source" src="./factory-small.jpg" />
+        </div>
+
+        <script>
+
+            const pixelRatio = window.devicePixelRatio;
+
+            const image = document.getElementById("source");
+
+            const canvas = document.getElementById("canvas");
+            const ctx = canvas.getContext("2d");
+
+            let imgWidth, imgHeight;
+
+            let x0, y0, x1, y1, dx = 0, dy = 0, delta0, delta1, factor = 0.5, zoomMax = 0.5, zoomMin = 10;
+
+            const tags = [
+                ['tag', 'CNC', [1000, 520]],
+                ['tag', 'automation line', [850, 360]],
+                ['tag', '5-axis CNC', [480, 380]],
+            ];
+            const tagLayer = document.getElementsByClassName('tag-layer')[0];
+
+            for (i = 0; i < tags.length; i++) {
+                const tag = document.createElement('div');
+                tag.className = "tag";
+                tagLayer.appendChild(tag);
+
+                const tagDesc = document.createElement('div');
+                tagDesc.className = "tag-desc";
+                tag.appendChild(tagDesc);
+
+                const p = document.createElement('p');
+                tagDesc.appendChild(p);
+                p.innerText = tags[i][1];
+
+                const a = document.createElement('a');
+                a.innerText = tags[i][0];
+                tag.appendChild(a);
+            }
+
+
+            renderTag();
+
+            image.addEventListener("load", (e) => {
+                imgWidth = image.naturalWidth;
+                imgHeight = image.naturalHeight;
+
+                draw(dx, dy);
+            });
+
+            function draw(dx, dy) {
+                const dHeight = canvas.offsetHeight / factor;
+                const dWidth = dHeight * canvas.offsetWidth / canvas.offsetHeight;
+                ctx.drawImage(image, dx, dy, dWidth, dHeight, 0, 0, canvas.width, canvas.height);
+            }
+
+            function mousedown(e) {
+                x0 = e.clientX;
+                y0 = e.clientY;
+
+                canvas.addEventListener('mousemove', mousemove, false);
+                canvas.addEventListener('mouseup', mouseup, false);
+            }
+
+            function mousemove(e) {
+
+                x1 = e.clientX;
+                y1 = e.clientY;
+
+                console.log(x1 + ', ' + y1);
+
+                dx += (x0 - x1);
+                dy += (y0 - y1);
+
+                dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+
+                draw(Math.min(imgWidth, dx), dy);
+
+                renderTag();
+
+                x0 = x1;
+                y0 = y1;
+
+            }
+
+            function renderTag() {
+
+                for (i = 0; i < tags.length; i++) {
+                //for (i = 0; i < 1; i++) {
+
+                    const tag = document.getElementsByClassName('tag')[i];
+                    const tagDesc = document.getElementsByClassName('tag-desc')[i];
+                    const tagDescOffset = [(tag.offsetWidth - tagDesc.offsetWidth) / 2, -tagDesc.offsetHeight - tag.offsetHeight * 0.7];
+
+                    const translateX = (tags[i][2][0] - dx) * factor;
+                    const translateY = (tags[i][2][1] - dy) * factor;
+
+                    if (translateX < 0 | translateY < 0 | translateX > canvas.offsetWidth - tag.offsetWidth | translateY > + canvas.offsetHeight - tag.offsetWidth) {
+                        tag.style.display = 'none';
+                    } else {
+                        tag.style.display = 'block';
+                    }
+                    tag.style.transform = 'translate(' + (canvas.offsetLeft + translateX) + 'px,' + (canvas.offsetTop + translateY) + 'px)';
+                    tagDesc.style.transform = 'translate(' + tagDescOffset[0] + 'px,' + tagDescOffset[1] + 'px)';
+
+                }
+
+            }
+
+            function mouseup() {
+                canvas.removeEventListener('mousemove', mousemove, false);
+                canvas.removeEventListener('mouseup', mouseup, false);
+            }
+
+            function onWindowResize() {
+                draw(Math.min(imgWidth, dx), dy);
+                renderTag();
+            }
+
+            function zoom(e) {
+                e.preventDefault();
+                factor -= e.deltaY / 50;
+                factor = Math.min(zoomMin, Math.max(factor, zoomMax));
+                dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+                draw(dx, dy);
+                renderTag();
+            }
+
+            function touchstart(e) {
+
+                e.preventDefault();
+
+                switch (e.targetTouches.length) {
+
+                    case 1:
+
+                        x0 = e.pageX;
+                        y0 = e.pageY;
+
+                        break;
+
+                    default:
+
+                        const deltaX = e.targetTouches[0].pageX - e.targetTouches[1].pageX;
+                        const deltaY = e.targetTouches[0].pageY - e.targetTouches[1].pageY;
+                        delta0 = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+                        break;
+
+                }
+
+                canvas.addEventListener('touchmove', touchmove, false);
+                canvas.addEventListener('touchend', touchend, false);
+
+            }
+
+            function touchmove(e) {
+
+                e.preventDefault();
+
+                switch (e.targetTouches.length) {
+
+                    case 1:
+
+                        x1 = e.pageX;
+                        y1 = e.pageY;
+
+                        dx += (x0 - x1);
+                        dy += (y0 - y1);
+
+                        dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                        dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+
+                        draw(Math.min(imgWidth, dx), dy);
+
+                        renderTag();
+
+                        x0 = x1;
+                        y0 = y1;
+
+                        break;
+
+                    default:
+
+                        const deltaX = e.targetTouches[0].pageX - e.targetTouches[1].pageX;
+                        const deltaY = e.targetTouches[0].pageY - e.targetTouches[1].pageY;
+
+                        if (!delta0) {
+                            delta0 = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                        } else {
+                            delta1 = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                            factor += (delta1 - delta0) / 50;
+                            factor = Math.min(5, Math.max(factor, 1));
+                            dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                            dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+                            draw(dx, dy);
+                            renderTag();
+                            delta0 = delta1;
+                        }
+                        break;
+
+                }
+
+            }
+
+            function touchend() {
+                canvas.removeEventListener('touchmove', touchmove, false);
+                canvas.removeEventListener('touchend', touchend, false);
+            }
+
+            window.addEventListener('resize', onWindowResize, false);
+
+            canvas.addEventListener('mousedown', mousedown, false);
+            canvas.addEventListener('wheel', zoom, { passive: false });
+
+            canvas.addEventListener('touchstart', touchstart, false);
+
+        </script>
+
+    </body>
+
+</html>
