@@ -6,7 +6,8 @@ No worries!
 
 Even just with a smartphone, you can now create elegant panorama views with interactive features just like pro!
 
-<img width="698" alt="Screenshot 2024-06-01 at 16 38 30" src="https://github.com/quez-fun/mini-panorama/assets/54435650/5df6cec7-0926-4347-b086-cdbff3654255">
+![IMG_7156](https://github.com/quez-fun/mini-panorama/assets/54435650/2cf56374-e08a-4304-9d24-2bea9e71aeb3)
+
 
 live version: https://quez-fun.github.io/mini-panorama/
 
