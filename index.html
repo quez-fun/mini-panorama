@@ -120,6 +120,7 @@
 
     <body>
 
+        <button id="request">motion</button>
         <div>temporary mobile console area:<div id="tmpConsole"></div>
         </div>
         <div class="tag-layer">
@@ -225,7 +226,7 @@
             function renderTag() {
 
                 for (i = 0; i < tags.length; i++) {
-                //for (i = 0; i < 1; i++) {
+                    //for (i = 0; i < 1; i++) {
 
                     const tag = document.getElementsByClassName('tag')[i];
                     const tagDesc = document.getElementsByClassName('tag-desc')[i];
@@ -353,12 +354,39 @@
                 canvas.removeEventListener('touchend', touchend, false);
             }
 
+            function handleOrientation(e) {
+                tmpConsole.innerText = e.alpha;
+            }
+
+            if (location.protocol != "https:") {
+                location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+            }
+            function permission() {
+                if (typeof (DeviceMotionEvent) !== "undefined" && typeof (DeviceMotionEvent.requestPermission) === "function") {
+                    // (optional) Do something before API request prompt.
+                    DeviceMotionEvent.requestPermission()
+                        .then(response => {
+                            // (optional) Do something after API prompt dismissed.
+                            if (response == "granted") {
+                                window.addEventListener("deviceorientation", handleOrientation, true);
+                            }
+                        })
+                        .catch(console.error)
+                } else {
+                    alert("DeviceMotionEvent is not defined");
+                }
+            }
+            const btn = document.getElementById("request");
+            btn.addEventListener("click", permission);
+
             window.addEventListener('resize', onWindowResize, false);
 
             canvas.addEventListener('mousedown', mousedown, false);
             canvas.addEventListener('wheel', zoom, { passive: false });
 
             canvas.addEventListener('touchstart', touchstart, false);
+
+           
 
         </script>
 
