@@ -120,17 +120,19 @@
 
     <body>
 
-        <button id="request">motion</button>
         <div>temporary mobile console area:<div id="tmpConsole"></div>
         </div>
         <div class="tag-layer">
         </div>
         <div id="title-area">
-            <h4>Version 1.2.4</h4>
+            <h4>Version 1.2.5</h4>
             <p>1. move mouse/finger to shift the view</p>
             <p>2. scroll on canvas to zoom in/out</p>
             <p>3. tag & desc when mouse hovers over <br>(minor bug: description area will flow out of canvas when the
                 tag is near boundary)</p>
+            <p>4. [mobile only] click on the buttom below to enable gyro:</p>
+            <button id="request">motion</button>
+
             <div id="canvas-wrapper">
                 <canvas id="canvas"></canvas>
             </div>
@@ -355,7 +357,16 @@
             }
 
             function handleOrientation(e) {
-                tmpConsole.innerText = e.alpha;
+
+                dx += e.gamma / 2;
+                dy -= e.beta;
+
+                dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
+                dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
+
+                draw(Math.min(imgWidth, dx), dy);
+
+                renderTag();
             }
 
             if (location.protocol != "https:") {
@@ -386,7 +397,7 @@
 
             canvas.addEventListener('touchstart', touchstart, false);
 
-           
+
 
         </script>
 
