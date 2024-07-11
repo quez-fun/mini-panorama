@@ -128,10 +128,9 @@
             <h4>Version 1.2.5</h4>
             <p>1. move mouse/finger to shift the view</p>
             <p>2. scroll on canvas to zoom in/out</p>
-            <p>3. tag & desc when mouse hovers over <br>(minor bug: description area will flow out of canvas when the
-                tag is near boundary)</p>
-            <p>4. [mobile only] click on the buttom below to enable gyro:</p>
-            <button id="request">motion</button>
+            <p>3. tag & desc when mouse hovers over</p>
+            <p>4. click to enable gyro: <button id="request">motion</button></p>
+            
 
             <div id="canvas-wrapper">
                 <canvas id="canvas"></canvas>
@@ -369,24 +368,30 @@
                 renderTag();
             }
 
-            if (location.protocol != "https:") {
-                location.href = "https:" + window.location.href.substring(window.location.protocol.length);
-            }
             function permission() {
-                if (typeof (DeviceMotionEvent) !== "undefined" && typeof (DeviceMotionEvent.requestPermission) === "function") {
-                    // (optional) Do something before API request prompt.
-                    DeviceMotionEvent.requestPermission()
-                        .then(response => {
-                            // (optional) Do something after API prompt dismissed.
-                            if (response == "granted") {
-                                window.addEventListener("deviceorientation", handleOrientation, true);
-                            }
-                        })
-                        .catch(console.error)
+
+                if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    if (location.protocol != "https:") {
+                        location.href = "https:" + window.location.href.substring(window.location.protocol.length);
+                    }
+                    if (typeof (DeviceMotionEvent) !== "undefined" && typeof (DeviceMotionEvent.requestPermission) === "function") {
+                        // (optional) Do something before API request prompt.
+                        DeviceMotionEvent.requestPermission()
+                            .then(response => {
+                                // (optional) Do something after API prompt dismissed.
+                                if (response == "granted") {
+                                    window.addEventListener("deviceorientation", handleOrientation, true);
+                                }
+                            })
+                            .catch(console.error)
+                    } else {
+                        alert("DeviceMotionEvent is not defined");
+                    }
                 } else {
-                    alert("DeviceMotionEvent is not defined");
+                    alert("mobile only");
                 }
             }
+
             const btn = document.getElementById("request");
             btn.addEventListener("click", permission);
 
