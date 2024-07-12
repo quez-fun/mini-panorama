@@ -357,8 +357,10 @@
 
             function handleOrientation(e) {
 
-                dx += e.gamma / 2;
-                dy -= e.beta;
+                //tmpConsole.innerText = e.gamma;
+
+                dx += e.gamma/5;
+                dy -= (e.beta-45)/10;
 
                 dx = Math.min(imgWidth - canvas.offsetWidth / factor, Math.max(0, dx));
                 dy = Math.min(imgHeight - canvas.offsetHeight / factor, Math.max(0, dy));
@@ -375,10 +377,8 @@
                         location.href = "https:" + window.location.href.substring(window.location.protocol.length);
                     }
                     if (typeof (DeviceMotionEvent) !== "undefined" && typeof (DeviceMotionEvent.requestPermission) === "function") {
-                        // (optional) Do something before API request prompt.
                         DeviceMotionEvent.requestPermission()
                             .then(response => {
-                                // (optional) Do something after API prompt dismissed.
                                 if (response == "granted") {
                                     window.addEventListener("deviceorientation", handleOrientation, true);
                                 }
